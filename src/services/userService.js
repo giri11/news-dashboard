@@ -1,8 +1,19 @@
 import apiClient from './api';
 
 export const userService = {
-  getAllUsers: async () => {
-    const response = await apiClient.get('/users');
+  getAllUsers: async (page = 0, size = 10, sortBy = 'id', sortDir = 'asc', search = '') => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      sortDir
+    });
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    const response = await apiClient.get(`/users?${params.toString()}`);
     return response.data;
   },
 

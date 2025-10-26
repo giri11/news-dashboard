@@ -6,6 +6,7 @@ import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
+import UserForm from './pages/UserForm';
 import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Settings from './pages/Settings';
@@ -27,6 +28,8 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<Users />} />
+            <Route path="users/add" element={<UserForm />} />
+            <Route path="users/edit/:id" element={<UserForm />} />
             <Route path="roles" element={<Roles />} />
             <Route path="products" element={<Products />} />
             <Route path="orders" element={<Orders />} />
