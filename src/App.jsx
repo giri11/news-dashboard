@@ -7,11 +7,16 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import UserForm from './pages/UserForm';
+import Roles from './pages/Roles';
+import Categories from './pages/Categories';
+import CategoryForm from './pages/CategoryForm';
+import Articles from './pages/Articles';
+import ArticleForm from './pages/ArticleForm';
+import ArticleView from './pages/ArticleView';
 import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
-import Roles from './pages/Roles';
 
 function App() {
   return (
@@ -27,10 +32,27 @@ function App() {
           }>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            
+            {/* Users */}
             <Route path="users" element={<Users />} />
             <Route path="users/add" element={<UserForm />} />
             <Route path="users/edit/:id" element={<UserForm />} />
+            
+            {/* Roles */}
             <Route path="roles" element={<Roles />} />
+            
+            {/* Categories */}
+            <Route path="categories" element={<Categories />} />
+            <Route path="categories/add" element={<CategoryForm />} />
+            <Route path="categories/edit/:id" element={<CategoryForm />} />
+            
+            {/* Articles */}
+            <Route path="articles" element={<Articles />} />
+            <Route path="articles/add" element={<ArticleForm />} />
+            <Route path="articles/edit/:id" element={<ArticleForm />} />
+            <Route path="articles/view/:id" element={<ArticleView />} />
+            
+            {/* Other routes */}
             <Route path="products" element={<Products />} />
             <Route path="orders" element={<Orders />} />
             <Route path="settings" element={<Settings />} />
