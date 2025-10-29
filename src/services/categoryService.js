@@ -17,6 +17,22 @@ export const categoryService = {
     return response.data;
   },
 
+  getSearchCategories: async (page = 0, size = 10, sortBy = 'id', sortDir = 'desc', search = '') => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sortBy,
+      sortDir
+    });
+    
+    if (search) {
+      params.append('search', search);
+    }
+    
+    const response = await apiClient.get(`/categories/search?${params.toString()}`);
+    return response.data;
+  },
+
   getCategoryById: async (id) => {
     const response = await apiClient.get(`/categories/${id}`);
     return response.data;

@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './layouts/MainLayout';
 import Login from './pages/Login';
+import NotFound from './pages/NotFound';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
 import UserForm from './pages/UserForm';
@@ -24,6 +25,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/404" element={<NotFound />} />
           
           <Route path="/" element={
             <PrivateRoute>
@@ -62,6 +64,9 @@ function App() {
             <Route path="reports/inventory" element={<Dashboard />} />
             <Route path="profile" element={<Profile />} />
           </Route>
+          
+          {/* Catch all undefined routes */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
