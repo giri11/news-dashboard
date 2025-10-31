@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { articleService } from '../services/articleService';
 import { categoryService } from '../services/categoryService';
-import { ArrowLeft, Save, Image } from 'lucide-react';
+import { fileService } from '../services/fileService';
+import { ArrowLeft, Save, Image, Upload, X } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -10,8 +11,10 @@ const ArticleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
+  const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -60,7 +63,7 @@ const ArticleForm = () => {
 
   const fetchCategories = async () => {
     try {
-      const data = await categoryService.getSearchCategories(0, 1000, 'name', 'asc', '');
+      const data = await categoryService.getAllCategories(0, 1000, 'name', 'asc', '');
       setCategories(data.content);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
@@ -98,6 +101,49 @@ const ArticleForm = () => {
     setFormData(prev => ({
       ...prev,
       content: value
+    }));
+  };
+
+  const handleImageSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image size must be less than 10MB');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const response = await fileService.uploadImage(file);
+      setFormData(prev => ({
+        ...prev,
+        pathImage: response.url
+      }));
+    } catch (error) {
+      setError(error.response?.data?.error || 'Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      pathImage: ''
     }));
   };
 
@@ -243,30 +289,64 @@ const ArticleForm = () => {
                   )}
                 </div>
 
-                {/* Featured Image */}
+                {/* Featured Image Upload */}
                 <div className="p-4 rounded-lg bg-gray-50">
                   <label className="block mb-2 text-sm font-medium text-gray-700">
                     Featured Image
                   </label>
+                  
                   <input
-                    type="text"
-                    name="pathImage"
-                    value={formData.pathImage}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
-                  {formData.pathImage && (
-                    <div className="mt-3">
-                      <p className="mb-2 text-xs text-gray-500">Preview:</p>
+
+                  {!formData.pathImage ? (
+                    <button
+                      type="button"
+                      onClick={handleImageSelect}
+                      disabled={uploading}
+                      className="flex flex-col items-center justify-center w-full p-6 transition border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500 disabled:opacity-50"
+                    >
+                      {uploading ? (
+                        <>
+                          <Upload className="text-indigo-600 animate-bounce" size={40} />
+                          <p className="mt-2 text-sm text-gray-600">Uploading...</p>
+                        </>
+                      ) : (
+                        <>
+                          <Image className="text-gray-400" size={40} />
+                          <p className="mt-2 text-sm text-gray-600">Click to upload image</p>
+                          <p className="mt-1 text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="relative">
                       <img 
-                        src={formData.pathImage} 
+                        src={fileService.getImageUrl(formData.pathImage)} 
                         alt="Preview" 
                         className="w-full border border-gray-300 rounded-lg"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
                         }}
                       />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute p-2 text-white transition bg-red-500 rounded-full shadow-lg top-2 right-2 hover:bg-red-600"
+                      >
+                        <X size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleImageSelect}
+                        className="w-full px-4 py-2 mt-2 text-sm text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300"
+                      >
+                        Change Image
+                      </button>
                     </div>
                   )}
                 </div>
@@ -275,7 +355,7 @@ const ArticleForm = () => {
                 <div className="p-4 space-y-3 rounded-lg bg-gray-50">
                   <button
                     onClick={handleSubmit}
-                    disabled={loading || categories.length === 0}
+                    disabled={loading || categories.length === 0 || uploading}
                     className="flex items-center justify-center w-full gap-2 px-6 py-3 font-medium text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Save size={20} />
