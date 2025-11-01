@@ -24,6 +24,7 @@ const ArticleForm = () => {
     content: '',
     pathImage: ''
   });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Quill editor modules configuration
   const modules = {
@@ -156,7 +157,13 @@ const ArticleForm = () => {
       return;
     }
 
+    setShowConfirmModal(true);
+  };
+
+  const confirmPublish = async () => {
     setLoading(true);
+    setShowConfirmModal(false);
+
     try {
       const payload = {
         categoryId: Number(formData.categoryId),
@@ -173,7 +180,7 @@ const ArticleForm = () => {
       }
       navigate('/articles');
     } catch (error) {
-      setError(error.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} article`);
+      setError(error.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'publish'} article`);
     } finally {
       setLoading(false);
     }
@@ -374,6 +381,69 @@ const ArticleForm = () => {
           </div>
         </div>
       </div>
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-full">
+                  <Save className="text-indigo-600" size={24} />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {isEditMode ? 'Update Article' : 'Publish Article'}
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <p className="mb-4 text-gray-600">
+                {isEditMode 
+                  ? 'Are you sure you want to update this article? Your changes will be saved.'
+                  : 'Are you sure you want to publish this article? It will be visible to everyone.'}
+              </p>
+              
+              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-700">Title:</span>
+                    <span className="text-sm text-gray-900">{formData.title || 'Untitled'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-700">Category:</span>
+                    <span className="text-sm text-gray-900">
+                      {categories.find(c => c.id === Number(formData.categoryId))?.name || 'None'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t bg-gray-50">
+              <button
+                onClick={confirmPublish}
+                disabled={loading}
+                className="flex-1 px-6 py-2 font-medium text-white transition bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Processing...' : (isEditMode ? 'Yes, Update' : 'Yes, Publish')}
+              </button>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                disabled={loading}
+                className="flex-1 px-6 py-2 font-medium text-gray-700 transition bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -13,16 +13,16 @@ export const fileService = {
     return response.data;
   },
 
-  deleteImage: async (filename) => {
-    const response = await apiClient.delete(`/files/images/${filename}`);
+  deleteImage: async (fileUrl) => {
+    const response = await apiClient.delete('/files/delete', {
+      params: { url: fileUrl }
+    });
     return response.data;
   },
 
   getImageUrl: (path) => {
     if (!path) return null;
-    // If it's already a full URL, return it
-    if (path.startsWith('http')) return path;
-    // If it's a relative path from our API, prepend the base URL
-    return `http://localhost:8080${path}`;
+    // R2 returns full URLs, so just return it directly
+    return path;
   }
 };
